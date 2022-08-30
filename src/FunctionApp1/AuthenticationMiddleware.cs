@@ -5,11 +5,20 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.Functions.Worker.Middleware;
+using BackendFunctionApp.Extensions;
 
 namespace FunctionApp1;
 
 public class AuthenticationMiddleware : IFunctionsWorkerMiddleware
 {
+
+    private readonly IExtensionMethodsWrapper _extensionMethodsWrapper;
+
+    public AuthenticationMiddleware(IExtensionMethodsWrapper extensionMethodsWrapper)
+    {
+        _extensionMethodsWrapper = extensionMethodsWrapper;
+    }
+    
     public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next)
     {
         string headers = context.BindingContext.BindingData["Headers"]?.ToString();
@@ -19,10 +28,7 @@ public class AuthenticationMiddleware : IFunctionsWorkerMiddleware
             await next(context);
         else
         {
-            var request = await context.GetHttpRequestDataAsync();
-            var response = request.CreateResponse(HttpStatusCode.Unauthorized);
-            await response.WriteAsJsonAsync(new { Message = "Token is not valid." });
-            context.SetResponseData(response);
+            await _extensionMethodsWrapper.CreateJsonResponse(context, HttpStatusCode.Unauthorized, new { Message = "Token is not valid" });
         }
     }    
 }

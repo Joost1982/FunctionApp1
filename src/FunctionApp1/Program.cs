@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace FunctionApp1;
@@ -11,6 +12,10 @@ public class Program
             .ConfigureFunctionsWorkerDefaults(configure =>
             {
                 configure.UseMiddleware<AuthenticationMiddleware>();
+            })
+            .ConfigureServices(services =>
+            {
+                services.AddScoped<IExtensionMethodsWrapper, ExtensionMethodsWrapper>();
             })
             .Build();
 
